@@ -11,10 +11,17 @@ def load_config(path: Path) -> dict:
     """
     Loads model configurations from a text file into a dictionary.
 
-    :param path: picked from the root folder
-    :return: Description
-    :rtype: dict
+    Parameters
+    ----------
+    path : str
+        Path to the configuration file, relative to the root folder.
+
+    Returns
+    -------
+    config : dict
+        A dictionary containing the loaded model configurations.
     """
+
     config = {}
     with path.open() as f:
         for line in f:
@@ -25,8 +32,20 @@ def load_config(path: Path) -> dict:
             config[key.strip()] = value.strip()
     return config
 
-# Get the 
-def main(host, context_length):
+
+
+def main(host: str, context_length: int):
+    """
+    Main to run the chat application
+
+    Parameters
+    ----------
+    host : str
+        Host name of the model as defined in model_config.txt (consult your LM studio)
+    context_length : int 
+        Length of the context window (used to give warning about exceeting it)
+
+    """
     client = OpenAI(
         base_url=host,
         api_key=""
@@ -89,19 +108,25 @@ def run():
         context_length=int(config["context_length"])
     )
 
-def single_run(prompt):
-    """"
+def single_run(prompt:str)->str:
+    """
     Run a single prompt through the local LLM.
 
-    :param prompt: The prompt to send to the LLM.
-    :type prompt: str
-    :return: The response from the LLM.
-    :rtype: str
+    Parameters
+    ----------
+    prompt : str
+        The prompt to send to the LLM.
+
+    Returns
+    -------
+    response : str
+        The response from the LLM.
     """
     
     config_path = Path(__file__).parent / "model_config.txt"
     config = load_config(config_path)
     host=config["base_url"]
+    model = config["model"]
             
     client = OpenAI(
         base_url=host,
@@ -109,10 +134,41 @@ def single_run(prompt):
     )
 
     response = client.responses.create(
-        model="local-model",
-        input=prompt
+        input=prompt,
+        model=model
     )
     return response.output_text.replace("\n", "")
+
+def tokeniser_single_run(input_text:str)->list:
+    """
+    Tokenise a single prompt using the model as specified in embedding_model_config.txt. Requires an enabled tokeniser model in LM studio
+
+    Parameters
+    ----------
+    input_text : str
+        The prompt to send to the tokeniser.
+
+    Returns
+    -------
+    out : list
+        A list of vectorised entries (length specified by the selected model)
+    """
+    config_path = Path(__file__).parent / "embedding_model_config.txt"
+    config = load_config(config_path)
+    host=config["base_url"]
+    model = config["model"]
+            
+    client = OpenAI(
+        base_url=host,
+        api_key=""
+    )
+
+    response = client.embeddings.create(
+        input=input_text,
+        model=model
+    )
+    out = response.data[0].embedding
+    return out
 
 
 
