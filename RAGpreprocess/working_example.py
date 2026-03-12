@@ -67,6 +67,6 @@ pq.write_table(normalised_table, "normalised embeddings matrix.parquet")
 
 prompt = "TYPE YOUR PROMPT HERE"
 # Enrich with data
-enriched_prompt = RAG_preprocess.enhrich_prompt(prompt, parent_db, normalised_embeddings)
+enriched_prompt = RAG_preprocess.enrich_prompt(prompt, parent_db, normalised_embeddings)
 out = RunLLM.single_run(enriched_prompt)
 print(out)

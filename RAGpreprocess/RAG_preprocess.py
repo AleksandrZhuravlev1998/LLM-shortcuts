@@ -24,9 +24,6 @@ def pdf_to_text(path:str, return_by_page:bool=False)->str|list:
     # creating a pdf reader object
     reader = PdfReader(path)
 
-    # printing number of pages in pdf file
-
-    
     if return_by_page:
         output_text = []
         for i in range(len(reader.pages)):
@@ -70,7 +67,7 @@ def get_document_chunks(document:str, chunk_length:int) -> list:
     
     return chunks_list
 
-def create_vector_db_entry(path, chunk_length:bool|None=200, split_by_page:bool=False) -> pd.DataFrame:
+def create_vector_db_entry(path, chunk_length:int |None=200, split_by_page:bool=False) -> pd.DataFrame:
     """
     Creates a single vector database entry for a given PDF document. Depending on the document length, it produces a dataframe with several entries per document, where each entry is a vectorised chunk from the document 
 
@@ -80,7 +77,7 @@ def create_vector_db_entry(path, chunk_length:bool|None=200, split_by_page:bool=
         Path to the pdf file
     chunk_length : int
         The length of chunks to be generated. Default is 200. 
-    split_by_page: 
+    split_by_page: int|None
         Should the document be split into pages or in equally spaced chunks? Default is False. Cannot be True if chunk_length is specified. 
 
     Returns
@@ -181,7 +178,7 @@ def compute_similarity(vectorised_prompt: list,
     
     return top_n_idx
 
-def enhrich_prompt(prompt_initial:str, db:pd.DataFrame, normalised_embeddings:np.array, n: int|str = None,
+def enrich_prompt(prompt_initial:str, db:pd.DataFrame, normalised_embeddings:np.array, n: int|None = None,
                    length_instructions: int|None = "======== \n Final note: keep your response to 1 sentence. No more! It's a strict requirement"
                    ) -> str:
     """
