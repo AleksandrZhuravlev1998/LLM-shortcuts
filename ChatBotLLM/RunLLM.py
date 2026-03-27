@@ -1,5 +1,9 @@
 from openai import OpenAI
 from pathlib import Path
+import base64
+
+from PIL import Image
+from io import BytesIO
 
 class Colours:
     USER = "\033[94m"       
@@ -138,6 +142,94 @@ def single_run(prompt:str)->str:
         model=model
     )
     return response.output_text.replace("\n", "")
+
+
+def encode_image(file_path: str, target_width: int = 270) -> str:
+    """
+    Reduce an image and turn it into a unicode compatible with a local LLM
+
+    Parameters
+    ----------
+    file : str 
+        Full path to the image file 
+    target_width: int
+        The width to which the picture needs to be reduced (in pixels). Submitting images in their original size can be resource-consuming.
+
+    Returns
+    -------
+    out : str
+        A Python Unicode string corresponding to the resized image
+    """
+
+    # Load the image
+    with Image.open(file_path) as img:
+        # Maintain aspect ratio
+        w_percent = target_width / float(img.size[0])
+        target_height = int(float(img.size[1]) * w_percent)
+
+        img = img.resize((target_width, target_height), Image.LANCZOS)
+
+        # Save the image in buffer
+        buffer = BytesIO()
+        img.save(buffer, format="JPEG")  
+        buffer.seek(0)
+
+        out = base64.b64encode(buffer.read()).decode("utf-8")
+
+        return out
+
+def single_run_multimodal(file:str, prompt:str, target_width:int=270)->str:
+    """
+    Run a single prompt through the local multimodal LLM. Supports image attachments
+
+    Parameters
+    ----------
+    file : str 
+        Full path to the image file 
+    prompt : str
+        The prompt to send to the LLM.
+    target_width: int
+        The width to which the picture needs to be reduced (in pixels). Submitting images in their original size can be resource-consuming.
+
+    Returns
+    -------
+    response : str
+        The response from the LLM.
+    """
+
+    config_path = Path(__file__).parent / "multimodal_model_config.txt"
+    config = load_config(config_path)
+    host = config["base_url"]
+    model = config["model"]
+
+    client = OpenAI(
+        base_url=host,
+        api_key=""
+    )
+
+    content = []
+
+    if file is not None:
+        image_base64 = encode_image(file)
+        content.append({
+            "type": "image_url",
+            "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"}
+        })
+
+    # Text comes AFTER the image
+    content.append({"type": "text", "text": prompt})
+
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {
+                "role": "user",
+                "content": content
+            }
+        ]
+    )
+
+    return response.choices[0].message.content.strip()
 
 def tokeniser_single_run(input_text:str)->list:
     """

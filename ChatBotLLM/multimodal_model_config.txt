@@ -1,0 +1,4 @@
+base_url=http://127.0.0.1:1234/v1
+model=qwen/qwen3-vl-8b
+context_length=131072
+

@@ -20,5 +20,10 @@ Also, beware that the longer the chat, the more time it will take for the model 
 
 3) Make sure that the model status is "Running"
 4) Copy the local host address from "Reachable at" and paste it in model_config.txt of ChatBotLLM. 
-IMPORTANT: keep /v1 at the end of the local host address for endpoints to work correctly 
+NB 1: the current version supports three types of LLMs, for each of which you need to fill in a separate txt file in the directory:
+(1) Unimodal  - model_config.txt
+(2) Embedding - embedding_model_config.txt
+(3) Multimodal (supporting images) - multimodal_model_config.txt 
+The default version of the package contains the models tested by the author. 
+NB 2: keep /v1 at the end of the local host address for endpoints to work correctly 
 5) When not needed, click "Eject" in LM studio 
