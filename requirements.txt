@@ -1,4 +1,4 @@
-numpy==2.4.3
+numpy==2.3.5
 openai==2.30.0
 pandas==3.0.1
 Pillow==12.1.1
